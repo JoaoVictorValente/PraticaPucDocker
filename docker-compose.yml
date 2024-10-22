@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend-app
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
+    container_name: frontendapp
+    ports:
+      - "80:80"
+    networks:
+      - app_net
+    restart: unless-stopped
+    depends_on:
+      - backendapp1
+      - backendapp2
+    healthcheck:
+      test: curl -f http://localhost:80 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  backendapp1:
+    build:
+      context: ./backend-app
+      dockerfile: Dockerfile
+    expose:
+      - 5000
+    networks:
+      - app_net
+      - db_net
+    restart: unless-stopped
+    environment:
+      FLASK_ENV: production
+      FLASK_DB_HOST: postgres
+    depends_on:
+      - postgres
+    healthcheck:
+      test: curl -f http://localhost:5000/health || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  backendapp2:
+    build:
+      context: ./backend-app
+      dockerfile: Dockerfile
+    expose:
+      - 5000
+    networks:
+      - app_net
+      - db_net
+    restart: unless-stopped
+    environment:
+      FLASK_ENV: production
+      FLASK_DB_HOST: postgres
+    depends_on:
+      - postgres
+    healthcheck:
+      test: curl -f http://localhost:5000/health || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  postgres:
+    image: postgres:17.0-alpine
+    container_name: postgresdb
+    restart: always
+    ports:
+      - "5432:5432"
+    networks:
+      - db_net
+    environment:
+      POSTGRES_PASSWORD: secretpass
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+networks:
+  app_net:
+  db_net:
+
+volumes:
+  postgres-data:
