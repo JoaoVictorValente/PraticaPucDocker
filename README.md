@@ -38,6 +38,8 @@ A dinâmica do jogo, é criar uma nova partida no "Maker" inserindo frases, guar
 
 # Arquitetura 
 
+# DOCKER-COMPOSE.YML
+
 Foi criado um docker-compose.yml na raiz do projeto, o mesmo tem algumas configurações importantes.
 
 Estrutura e Descrição
